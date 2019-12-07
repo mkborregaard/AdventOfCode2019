@@ -32,24 +32,22 @@ function IntComputer(data)
     IntComputer(OffsetArray(copy(data), 0:length(data)-1), nargs, Ref(0), Int[])
 end
 
-function iterate(i::IntComputer, state = 0)
-    modes, opcode = process_instruction(i.data[state])
-    nargs = i.nargs[typeof(opcode)]
-    modeargs = ModeIndex.(modes[1:nargs], i.data[state .+ (1:nargs)])
-    f = run_opcode!(i, opcode, modeargs...)
-    state = f > 0 ? f : state + nargs + 1
-    f == -1 ? nothing : (nothing, state)
-end
-
-function compute(data, input)
-    i = IntComputer(data)
-    i.input[] = input
-    for _ in i; end
-    i
+function compute!(ic::IntComputer, input)
+    ic.input[] = input
+    state = 0
+    while state > -1
+        @show state
+        modes, opcode = process_instruction(ic.data[state])
+        nargs = ic.nargs[typeof(opcode)]
+        modeargs = ModeIndex.(modes[1:nargs], ic.data[state .+ (1:nargs)])
+        f = run_opcode!(ic, opcode, modeargs...)
+        @show f
+        state = f == 0 ? state + nargs + 1 : f
+    end
 end
 
 run_opcode!(::Any, ::Val) = error("unknown opcode")
 
-export compute, inp, outp
+export compute!, IntComputer
 
 end #OpCodes
