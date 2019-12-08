@@ -45,6 +45,7 @@ function compute!(ic::IntComputer, input)
         f = run_opcode!(ic, opcode, modeargs...)
         state = f == 0 ? state + nargs + 1 : f
     end
+    ic
 end
 
 run_opcode!(::Any, ::Val) = error("unknown opcode")
