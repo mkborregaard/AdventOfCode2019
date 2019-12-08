@@ -31,6 +31,7 @@ function IntComputer(data)
     nargs = Dict(x.sig.parameters[3] => x.nargs-3 for x in methods(run_opcode!).ms)
     IntComputer(OffsetArray(copy(data), 0:length(data)-1), nargs, Int[], Int[])
 end
+IntComputer(str::AbstractString) = IntComputer(parse.(Int, split(str, ',')))
 
 function compute!(ic::IntComputer, input)
     empty!(ic.input)
