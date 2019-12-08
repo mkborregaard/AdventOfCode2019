@@ -33,9 +33,11 @@ function IntComputer(data)
 end
 IntComputer(str::AbstractString) = IntComputer(parse.(Int, split(str, ',')))
 
+addinput!(ic::IntComputer, inp) = append!(ic.input, inp)
+getoutput!(ic::IntComputer) = ic.output
+
 function compute!(ic::IntComputer, input)
-    empty!(ic.input)
-    append!(ic.input, input)
+    addinput!(ic, input)
     empty!(ic.output)
     state = 0
     while state > -1
