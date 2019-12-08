@@ -1,11 +1,12 @@
-include("OpCodes5.jl")
-using .OpCodes5
-ps(x) = parse.(Int, split(x, ','))
+include("OpCodes.jl")
+using .OpCodes
 
-ic = IntComputer(ps(readline("data/Dec5_data.txt")))
-
+#Question 1
+data = readline("data/Dec5_data.txt")
+ic = IntComputer(data)
 compute!(ic, 1)
 ic.output
 
-
-compute(ps("3,9,8,9,10,9,4,9,99,-1,8"))
+# Question 2
+ic = IntComputer(data)
+compute!(ic, 5)
