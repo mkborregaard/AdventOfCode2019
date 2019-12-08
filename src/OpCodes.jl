@@ -52,10 +52,10 @@ run_opcode!(ic, ::Val{1}, src1, src2, dest) = (ic.data[dest] = ic.data[src1] + i
 run_opcode!(ic, ::Val{2}, src1, src2, dest) = (ic.data[dest] = ic.data[src1] * ic.data[src2]; 0)
 run_opcode!(ic, ::Val{3}, arg) = (ic.data[arg] = popfirst!(ic.input); 0)
 run_opcode!(ic, ::Val{4}, arg) = (push!(ic.output, ic.data[arg]); 0)
-run_opcode!(ic, ::Val{5}, pred, inst) = pred != 0 ? ic.data[inst] : 0
-run_opcode!(ic, ::Val{6}, pred, inst) = pred == 0 ? ic.data[inst] : 0
-run_opcode!(ic, ::Val{7}, arg1, arg2, dest) = (ic.data[dest] = Int(arg1 < arg2); 0)
-run_opcode!(ic, ::Val{8}, arg1, arg2, dest) = (ic.data[dest] = Int(arg1 == arg2); 0)
+run_opcode!(ic, ::Val{5}, pred, inst) = ic.data[pred] != 0 ? ic.data[inst] : 0
+run_opcode!(ic, ::Val{6}, pred, inst) = ic.data[pred] == 0 ? ic.data[inst] : 0
+run_opcode!(ic, ::Val{7}, arg1, arg2, dest) = (ic.data[dest] = Int(ic.data[arg1] < ic.data[arg2]); 0)
+run_opcode!(ic, ::Val{8}, arg1, arg2, dest) = (ic.data[dest] = Int(ic.data[arg1] == ic.data[arg2]); 0)
 
 export compute!, IntComputer
 
