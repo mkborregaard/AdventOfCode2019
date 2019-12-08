@@ -24,21 +24,21 @@ getindex(data::AbstractVector, mi::ModeIndex{1}) = mi.arg
 struct IntComputer
     data::OffsetArray{Int, 1}
     nargs::Dict{Type, Int}
-    input::Vector{Int}
-    output::Vector{Int}
+    input::Channel{Int}
+    output::Channel{Int}
 end
-function IntComputer(data)
+function IntComputer(data, input = Channel{Int}(32), output = Channel{Int}(256))
     nargs = Dict(x.sig.parameters[3] => x.nargs-3 for x in methods(run_opcode!).ms)
-    IntComputer(OffsetArray(copy(data), 0:length(data)-1), nargs, Int[], Int[])
+    IntComputer(OffsetArray(copy(data), 0:length(data)-1), nargs, input, output)
 end
-IntComputer(str::AbstractString) = IntComputer(parse.(Int, split(str, ',')))
+IntComputer(str::AbstractString, input = Channel{Int}(32), output = Channel{Int}(256)) =
+    IntComputer(parse.(Int, split(str, ',')), input, output)
 
-addinput!(ic::IntComputer, inp) = append!(ic.input, inp)
-getoutput!(ic::IntComputer) = ic.output
+addinput!(ic::IntComputer, inp) = put!(ic.input, inp)
+getoutput(ic::IntComputer) = (close(ic.output); collect(ic.output))
 
-function compute!(ic::IntComputer, input)
-    addinput!(ic, input)
-    empty!(ic.output)
+compute!(ic::IntComputer, input) = (addinput!(ic, input); compute!(ic))
+function compute!(ic::IntComputer)
     state = 0
     while state > -1
         modes, opcode = process_instruction(ic.data[state])
@@ -54,13 +54,13 @@ run_opcode!(::Any, ::Val) = error("unknown opcode")
 run_opcode!(ic, ::Val{99}) = -1
 run_opcode!(ic, ::Val{1}, src1, src2, dest) = (ic.data[dest] = ic.data[src1] + ic.data[src2]; 0)
 run_opcode!(ic, ::Val{2}, src1, src2, dest) = (ic.data[dest] = ic.data[src1] * ic.data[src2]; 0)
-run_opcode!(ic, ::Val{3}, arg) = (ic.data[arg] = popfirst!(ic.input); 0)
-run_opcode!(ic, ::Val{4}, arg) = (push!(ic.output, ic.data[arg]); 0)
+run_opcode!(ic, ::Val{3}, arg) = (ic.data[arg] = takeinput!(ic); 0)
+run_opcode!(ic, ::Val{4}, arg) = (put!(ic.output, ic.data[arg]); 0)
 run_opcode!(ic, ::Val{5}, pred, inst) = ic.data[pred] != 0 ? ic.data[inst] : 0
 run_opcode!(ic, ::Val{6}, pred, inst) = ic.data[pred] == 0 ? ic.data[inst] : 0
 run_opcode!(ic, ::Val{7}, arg1, arg2, dest) = (ic.data[dest] = Int(ic.data[arg1] < ic.data[arg2]); 0)
 run_opcode!(ic, ::Val{8}, arg1, arg2, dest) = (ic.data[dest] = Int(ic.data[arg1] == ic.data[arg2]); 0)
 
-export compute!, IntComputer
+export compute!, IntComputer, getoutput, addinput!
 
 end #OpCodes
