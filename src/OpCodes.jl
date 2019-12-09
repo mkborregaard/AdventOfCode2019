@@ -4,10 +4,9 @@ using OffsetArrays
 import Base: iterate, setindex!, getindex
 
 # process an instruction to an opcode
-function process_instruction(instruction)
-    dig = zeros(Int, 5)
-    digits!(dig, instruction)
-    dig[3:5], Val(instruction % 100)
+function process_instruction!(digit, instruction)
+    digits!(digit, instruction)
+    Val(instruction % 100)
 end
 
 # The IntComputer holding all the info
@@ -48,10 +47,13 @@ compute!(ic::IntComputer, input) = (addinput!(ic, input); compute!(ic))
 function compute!(ic::IntComputer)
     state = 0
     ic.relativeindex[] = 0
+    modeargs = Vector{ModeIndex}(undef, 3)
+    modes = Vector{Int}(undef, 5)
     while state > -1
-        modes, opcode = process_instruction(ic.data[state])
+        opcode = process_instruction!(modes, ic.data[state])
         nargs = ic.nargs[typeof(opcode)]
-        modeargs = ModeIndex.(modes[1:nargs], ic.data[state .+ (1:nargs)])
+        resize!(modeargs, nargs)
+        modeargs .= ModeIndex.(modes[2 .+ (1:nargs)], ic.data[state .+ (1:nargs)])
         f = run_opcode!(ic, opcode, modeargs...)
         state = f == 0 ? state + nargs + 1 : f
     end
