@@ -17,10 +17,11 @@ struct IntComputer
     output::Channel{Int}
     relativeindex::Ref{Int}
     extradata::Dict{Int, Int}
+    finished::Bool
 end
 function IntComputer(data, input = Channel{Int}(32), output = Channel{Int}(256))
     nargs = Dict(x.sig.parameters[3] => x.nargs-3 for x in methods(run_opcode!).ms)
-    IntComputer(OffsetArray(copy(data), 0:length(data)-1), nargs, input, output, Ref(0), Dict{Int, Int}())
+    IntComputer(OffsetArray(copy(data), 0:length(data)-1), nargs, input, output, Ref(0), Dict{Int, Int}(), false)
 end
 IntComputer(str::AbstractString, input = Channel{Int}(32), output = Channel{Int}(256)) =
     IntComputer(parse.(Int, split(str, ',')), input, output)
@@ -57,6 +58,7 @@ function compute!(ic::IntComputer)
         f = run_opcode!(ic, opcode, modeargs...)
         state = f == 0 ? state + nargs + 1 : f
     end
+    ic.finished = true
     ic
 end
 
