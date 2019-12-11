@@ -67,7 +67,7 @@ run_opcode!(ic, ::Val{99}) = -1
 run_opcode!(ic, ::Val{1}, src1, src2, dest) = (ic[dest] = ic[src1] + ic[src2]; 0)
 run_opcode!(ic, ::Val{2}, src1, src2, dest) = (ic[dest] = ic[src1] * ic[src2]; 0)
 run_opcode!(ic, ::Val{3}, arg) = (ic[arg] = takeinput!(ic); 0)
-run_opcode!(ic, ::Val{4}, arg) = (ic[arg] != 0 && put!(ic.output, ic[arg]); 0)
+run_opcode!(ic, ::Val{4}, arg) = (put!(ic.output, ic[arg]); 0)
 run_opcode!(ic, ::Val{5}, pred, inst) = ic[pred] != 0 ? ic[inst] : 0
 run_opcode!(ic, ::Val{6}, pred, inst) = ic[pred] == 0 ? ic[inst] : 0
 run_opcode!(ic, ::Val{7}, arg1, arg2, dest) = (ic[dest] = Int(ic[arg1] < ic[arg2]); 0)
