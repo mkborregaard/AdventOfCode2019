@@ -3,9 +3,9 @@ using .OpCodes
 using StaticArrays
 
 function run1(data)
-    left =  @SMatrix [0  1;
+    right =  @SMatrix [0  1;
                      -1  0]
-    right = @SMatrix [0 -1;
+    left = @SMatrix [0 -1;
                       1  0]
     dir =   @SVector [-1, 0]
     pos =   @SVector [0, 0]
@@ -19,10 +19,10 @@ function run1(data)
         put!(inp, instr)
         color = take!(outp)
         color == 1 && push!(field, pos)
-    #    put!(inp, instr)
         dir = take!(outp) == 1 ? right * dir : left * dir
         pos = pos + dir
     end
+    length(field)
 end
 
 run1(readline("data/Dec11_data.txt"))
