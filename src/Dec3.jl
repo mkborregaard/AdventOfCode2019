@@ -49,7 +49,7 @@ l1, l2 = getlines(split(test2, '\n'))
 @test runlines(l1, l2) == 135
 
 # Final result
-l1, l2 = getlines(readlines("Dec3_data.txt"))
+l1, l2 = getlines(readlines("data/Dec3_data.txt"))
 runlines(l1, l2)
 
 ### Question 2
