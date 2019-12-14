@@ -62,11 +62,12 @@ length(m)
 
 function findlag(v)
     f = 1
-    while !isnothing(f)
+    while true
         f = findnext(==(v[1]), v, f+1)
-        f > length(v)/2 && return 0
+        (!isnothing(f) || f > div(length(v),2)) && return 0
         v[1:f] == v[f .+ (1:f) .- 1] && return f-1
     end
 end
 
 findlag(reverse(m))
+findlag(reverse(x))
