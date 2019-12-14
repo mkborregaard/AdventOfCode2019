@@ -1,24 +1,25 @@
 # https://adventofcode.com/2019/day/14
+using StaticArrays
 
-parsebite(str) = (ret = split(str, " "); (parse(Int, ret[1]), ret[2]))
+parsebite(str) = (ret = split(str, " "); (parse(Int, ret[1]), Symbol(string(ret[2]))))
 
 function parse_requirements(data)
-    reqs = Dict{String, Any}()
+    reqs = Dict{Symbol, Tuple{Int, SVector, SVector}}()
     for line in data
         @show line
         ingr, prods = split(line, " => ")
         ingrs = parsebite.(split(ingr, ", "))
         prod_amount, prod = parsebite(prods)
-        ingr_amount = [x[1] for x in ingrs]
-        ingr = [x[2] for x in ingrs]
+        ingr_amount = SVector{length(ingrs)}([x[1] for x in ingrs])
+        ingr = SVector{length(ingrs)}([Symbol(string(x[2])) for x in ingrs])
         reqs[prod] = (prod_amount, ingr_amount, ingr)
     end
     reqs
 end
 
-function makefuel(reqs, stock = Dict{String, Int}())
+function makefuel(reqs, stock = Dict{Symbol, Int}())
     function produce(amount, material)
-        material == "ORE" && return amount
+        material == :ORE && return amount
         ore = 0
         prod_amount, ingr_amount, ingr = reqs[material]
         while amount > get!(stock, material, 0)
@@ -30,7 +31,7 @@ function makefuel(reqs, stock = Dict{String, Int}())
         stock[material] -= amount
         ore
     end
-    produce(1, "FUEL"), stock
+    produce(1, :FUEL), stock
 end
 
 data = readlines("data/2019/day_14.txt")
@@ -41,7 +42,7 @@ using ProgressMeter
 
 function run2(reqs)
     tot = div(1000000000000, 1000)
-    stock = Dict{String, Int}()
+    stock = Dict{Symbol, Int}()
     usedore = 0
     rounds = 0
     p = Progress(tot)
