@@ -41,9 +41,9 @@ getindex(ic::IntComputer, mi::ModeIndex{1}) = mi.arg
 getindex(ic::IntComputer, mi::ModeIndex{2}) = getindex(ic, ic.relativeindex[] + mi.arg)
 getindex(ic::IntComputer, arg) = arg > length(ic.data)-1 ? get!(ic.extradata, arg, 0) : ic.data[arg]
 
-addinput!(ic::IntComputer, inp) = put!(ic.input, inp)
-takeinput!(ic::IntComputer) = take!(ic.input)
-getoutput(ic::IntComputer) = (close(ic.output); collect(ic.output))
+addinput!(ic, inp) = put!(ic.input, inp)
+takeinput!(ic) = take!(ic.input)
+getoutput(ic) = (close(ic.output); collect(ic.output))
 
 compute!(ic::IntComputer, input) = (addinput!(ic, input); compute!(ic))
 function compute!(ic::IntComputer)
