@@ -26,24 +26,32 @@ heatmap(field)
 
 # question 2
 
+include("OpCodes.jl")
+using .OpCodes
+data = readline("data/Dec13_data.txt")
+
+
+OpCodes.takeinput!(ic::IntComputer) = (@show ic.moreargs["paddlex"]; sign(ic.moreargs["ballx"] - ic.moreargs["paddlex"]))
+
 function run2(data)
-    inp, outp = Channel{Int}(1), Channel{Int}(3)
+    inp, outp = Channel{Int}(2), Channel{Int}(3)
     d = parse.(Int,split(data, ','))
     d[1] = 2
-    ic = IntComputer(data, inp, outp)
-    @async compute!(ic)
     field = zeros(Int, 46, 21)
     score = 0
-    put!(inp,1)
+    ic = IntComputer(d, inp, outp)
+    @async compute!(ic)
     while !ic.finished[]
         x,y,el = [take!(outp) for i in 1:3]
         if (x,y) == (-1, 0)
             score = el
-        else
-            field[x+1, y+1] = el
+        elseif el == 3
+            ic.moreargs["paddlex"] = x
+        elseif el == 4
+            ic.moreargs["ballx"] = x
         end
     end
-    close(inp)
-    score, count(==(2), values(field)), collect(inp)
+    score, count(==(2), field)
 end
+
 s,c = run2(data)
