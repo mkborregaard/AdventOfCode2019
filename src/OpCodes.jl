@@ -18,10 +18,11 @@ struct IntComputer
     relativeindex::Ref{Int}
     extradata::Dict{Int, Int}
     finished::Ref{Bool}
+    moreargs::Dict{Any, Any}
 end
 function IntComputer(data, input = Channel{Int}(32), output = Channel{Int}(256))
     nargs = Dict(x.sig.parameters[3] => x.nargs-3 for x in methods(run_opcode!).ms)
-    IntComputer(OffsetArray(copy(data), 0:length(data)-1), nargs, input, output, Ref(0), Dict{Int, Int}(), Ref(false))
+    IntComputer(OffsetArray(copy(data), 0:length(data)-1), nargs, input, output, Ref(0), Dict{Int, Int}(), Ref(false), Dict{Any, Any}())
 end
 IntComputer(str::AbstractString, input = Channel{Int}(32), output = Channel{Int}(256)) =
     IntComputer(parse.(Int, split(str, ',')), input, output)
