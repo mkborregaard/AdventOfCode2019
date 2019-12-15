@@ -6,7 +6,6 @@ parsebite(str) = (ret = split(str, " "); (parse(Int, ret[1]), Symbol(string(ret[
 function parse_requirements(data)
     reqs = Dict{Symbol, Tuple{Int, SVector, SVector}}()
     for line in data
-        @show line
         ingr, prods = split(line, " => ")
         ingrs = parsebite.(split(ingr, ", "))
         prod_amount, prod = parsebite(prods)
@@ -17,57 +16,41 @@ function parse_requirements(data)
     reqs
 end
 
-function makefuel(reqs, stock = Dict{Symbol, Int}())
+function makefuel(reqs, x = 1)
     function produce(amount, material)
         material == :ORE && return amount
         ore = 0
         prod_amount, ingr_amount, ingr = reqs[material]
-        while amount > get!(stock, material, 0)
-            for i in eachindex(ingr)
-                ore += sum(produce(ingr_amount[i], ingr[i]))
-            end
-            stock[material] += prod_amount
+        d,r = divrem(amount - get!(stock, material, 0), prod_amount)
+        am = d + Int(r>0)
+        @inbounds for i in eachindex(ingr)
+            ore += sum(produce(ingr_amount[i]*am, ingr[i]))
         end
-        stock[material] -= amount
+        stock[material] += prod_amount * am - amount
         ore
     end
-    produce(1, :FUEL), stock
+    stock = Dict{Symbol, Int}()
+    produce(x, :FUEL)
 end
-
-data = readlines("data/2019/day_14.txt")
-reqs = parse_requirements(data)
-@btime makefuel(reqs)
-
-using ProgressMeter
 
 function run2(reqs)
-    tot = div(1000000000000, 1000)
-    stock = Dict{Symbol, Int}()
-    usedore = 0
-    rounds = 0
-    p = Progress(tot)
-    ms = Int[]
-    while usedore < tot
-        m, stock = makefuel(reqs, stock)
-        usedore += m
-        rounds += 1
-        push!(ms, m)
-        update!(p, usedore)
-    end
-    ms
-end
-
-m = run2(reqs)
-length(m)
-
-function findlag(v)
-    f = 1
+    tot = 1000000000000
+    xs = 0
+    step = 10000
+    sig = 1
     while true
-        f = findnext(==(v[1]), v, f+1)
-        (!isnothing(f) || f > div(length(v),2)) && return 0
-        v[1:f] == v[f .+ (1:f) .- 1] && return f-1
+        m = makefuel(reqs, xs += step)
+        newsig = sign(tot-m)
+        sig != newsig && (step = -div(step, 2))
+        sig = newsig
+        step == 0 && return xs - Int(m > tot)
     end
 end
 
-findlag(reverse(m))
-findlag(reverse(x))
+# Question 1
+data = readlines("data/2019/day_14.txt")
+reqs = parse_requirements(data)
+@btime makefuel($(reqs))
+
+# Question 2
+@btime run2(reqs)
