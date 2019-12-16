@@ -51,29 +51,29 @@ function compute!(ic::IntComputer)
     ic.relativeindex[] = 0
     modeargs = Vector{ModeIndex}(undef, 3)
     modes = Vector{Int}(undef, 5)
-    while state > -1
+    while state > -2
         opcode = process_instruction!(modes, ic.data[state])
         nargs = ic.nargs[typeof(opcode)]
         resize!(modeargs, nargs)
         modeargs .= ModeIndex.(modes[2 .+ (1:nargs)], ic.data[state .+ (1:nargs)])
         f = run_opcode!(ic, opcode, modeargs...)
-        state = f == 0 ? state + nargs + 1 : f
+        state = f == -1 ? state + nargs + 1 : f
     end
     ic.finished[] = true
     ic
 end
 
 run_opcode!(::Any, ::Val) = error("unknown opcode")
-run_opcode!(ic, ::Val{99}) = -1
-run_opcode!(ic, ::Val{1}, src1, src2, dest) = (ic[dest] = ic[src1] + ic[src2]; 0)
-run_opcode!(ic, ::Val{2}, src1, src2, dest) = (ic[dest] = ic[src1] * ic[src2]; 0)
-run_opcode!(ic, ::Val{3}, arg) = (ic[arg] = takeinput!(ic); 0)
-run_opcode!(ic, ::Val{4}, arg) = (put!(ic.output, ic[arg]); 0)
-run_opcode!(ic, ::Val{5}, pred, inst) = ic[pred] != 0 ? ic[inst] : 0
-run_opcode!(ic, ::Val{6}, pred, inst) = ic[pred] == 0 ? ic[inst] : 0
-run_opcode!(ic, ::Val{7}, arg1, arg2, dest) = (ic[dest] = Int(ic[arg1] < ic[arg2]); 0)
-run_opcode!(ic, ::Val{8}, arg1, arg2, dest) = (ic[dest] = Int(ic[arg1] == ic[arg2]); 0)
-run_opcode!(ic, ::Val{9}, arg) = (ic.relativeindex[] += ic[arg]; 0)
+run_opcode!(ic, ::Val{99}) = -2
+run_opcode!(ic, ::Val{1}, src1, src2, dest) = (ic[dest] = ic[src1] + ic[src2]; -1)
+run_opcode!(ic, ::Val{2}, src1, src2, dest) = (ic[dest] = ic[src1] * ic[src2]; -1)
+run_opcode!(ic, ::Val{3}, arg) = (ic[arg] = takeinput!(ic); -1)
+run_opcode!(ic, ::Val{4}, arg) = (put!(ic.output, ic[arg]); -1)
+run_opcode!(ic, ::Val{5}, pred, inst) = ic[pred] != 0 ? ic[inst] : -1
+run_opcode!(ic, ::Val{6}, pred, inst) = ic[pred] == 0 ? ic[inst] : -1
+run_opcode!(ic, ::Val{7}, arg1, arg2, dest) = (ic[dest] = Int(ic[arg1] < ic[arg2]); -1)
+run_opcode!(ic, ::Val{8}, arg1, arg2, dest) = (ic[dest] = Int(ic[arg1] == ic[arg2]); -1)
+run_opcode!(ic, ::Val{9}, arg) = (ic.relativeindex[] += ic[arg]; -1)
 
 export compute!, IntComputer, getoutput, addinput!
 
