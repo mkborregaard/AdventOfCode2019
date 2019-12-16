@@ -48,7 +48,7 @@ function run2(reqs)
 end
 
 # Question 1
-data = readlines("data/2019/day_14.txt")
+data = readlines("data/Dec14_data.txt")
 reqs = parse_requirements(data)
 @btime makefuel($(reqs))
 
